@@ -21,17 +21,14 @@ class Board:
         self.board[field[0]][field[1]] = value
         return self
 
+    def print(self) -> None:
+        for row in self.board:
+            print(row)
 
 class TicTacToeBoard(Board):
     def __init__(self):
         super().__init__(3, ' ')
 
-    # def __repr__(self) -> str:
-    #     rows = []
-    #     for y in range(self.board_size):
-    #         rows.append(''.join(zip('| ', [cell for cell in self.board[y]], strict=False)))
-    #         rows.append('________')
-    #     return '\n'.join(rows)
 
     def get_winning_player(self) -> str | None:
         if len(self.get_valid_move_positions()) == 0:
