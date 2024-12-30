@@ -1,7 +1,7 @@
-from tictactoe import TicTacToeBoard, Field
+from board import Field, Board
 
 
-def minimax(board: TicTacToeBoard, is_maximizing: bool) -> int:
+def minimax(board: Board, is_maximizing: bool) -> int:
     player = 'X' if is_maximizing else 'O'
     if (winning_player := board.get_winning_player()) is not None:
         if winning_player == '-':
@@ -26,7 +26,7 @@ def minimax(board: TicTacToeBoard, is_maximizing: bool) -> int:
 
 
 class CPUPlayer:
-    def __init__(self, board: TicTacToeBoard, player: str = 'O') -> None:
+    def __init__(self, board: Board, player: str = 'O') -> None:
         self.board = board
         self.player = player
 

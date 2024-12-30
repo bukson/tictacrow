@@ -1,7 +1,7 @@
 import pytest
 
-from cpuplayer import minimax
-from tictactoe import Board, TicTacToeBoard
+from tictactoe.cpuplayer import minimax
+from tictactoe.tictactoeboard import TicTacToeBoard
 
 
 def test_cpu_player():
