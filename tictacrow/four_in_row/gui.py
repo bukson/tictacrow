@@ -1,19 +1,19 @@
 import tkinter as tk
 from tkinter import messagebox
 
-from four_in_row.cpuplayer import CPUPlayer
+from four_in_row.mcts import CPUPlayer
 from four_in_row.board import FourInRowBoard
 
 
 class FourInRowGui:
-    def __init__(self, board_size:int = 25, in_row: int = 3):
+    def __init__(self, board_size:int = 25, in_row: int = 3, *args, **kwargs):
         self.root = tk.Tk()
         self.root.title("4 in Row")
         self.board_size_pixels = 600
         self.board_size = board_size
         self.board = FourInRowBoard(board_size, in_row)
         self.current_player = 'X'
-        self.cpu = CPUPlayer(self.board, player='O')
+        self.cpu = CPUPlayer(self.board, player='O', iterations=kwargs.get('iterations', 2000))
 
         self.buttons = [[None for _ in range(self.board_size)] for _ in range(self.board_size)]
         for row in range(self.board_size):
@@ -41,7 +41,7 @@ class FourInRowGui:
         else:
             self.current_player = "O" if self.current_player == "X" else "X"
             if is_player_move:
-                cpu_move = self.cpu.select_best_move_minimax()
+                cpu_move = self.cpu.select_best_move_mcts()
                 self.make_move(cpu_move[0], cpu_move[1], is_player_move=False)
 
 
@@ -51,12 +51,12 @@ class FourInRowGui:
     def reset_game(self) -> None:
         self.current_player = 'X'
         self.board = FourInRowBoard(self.board_size)
-        self.cpu = CPUPlayer(self.board, player='O')
+        self.cpu = CPUPlayer(self.board, player='O', iterations=self.cpu.iterations)
         for row in range(self.board_size):
             for col in range(self.board_size):
                 self.buttons[row][col].config(text="")
 
 
 if __name__ == "__main__":
-    application = FourInRowGui(board_size=5, in_row=4)
+    application = FourInRowGui(board_size=11, in_row=5, iterations=4000)
     application.start()

@@ -7,6 +7,8 @@ class Board(ABC):
         self.board_size = board_size
         self.empty_value = empty_value
         self.board = [[empty_value for _ in range(self.board_size)] for _ in range(self.board_size)]
+        self.play_history = []
+        self.current_player = 'X'
 
     def get_valid_move_positions(self) -> list[Field]:
         positions = []
@@ -16,8 +18,11 @@ class Board(ABC):
                     positions.append([y, x])
         return positions
 
-    def update_board(self, field: Field, value: str, *args, **kwargs) -> 'Board':
-        self.board[field[0]][field[1]] = value
+    def update_board(self, field: Field, symbol: str, record_history: bool = True) -> 'Board':
+        self.board[field[0]][field[1]] = symbol
+        self.update_current_player(symbol)
+        if record_history:
+            self.play_history.append((field, symbol))
         return self
 
     def print(self) -> None:
@@ -34,3 +39,10 @@ class Board(ABC):
     @abstractmethod
     def get_winning_player(self) -> str | None:
         pass
+
+    def update_current_player(self, last_player_symbol: str) -> None:
+        if last_player_symbol == 'X':
+            self.current_player = 'O'
+        else:
+            self.current_player = 'X'
+

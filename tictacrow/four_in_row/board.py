@@ -7,16 +7,10 @@ class FourInRowBoard(Board):
         self.max_in_row = max_in_row
         self.play_history = []
 
-    def update_board(self, field: Field, value: str, record_history: bool = True, *args, **kwargs) -> 'Board':
-        self.board[field[0]][field[1]] = value
-        if record_history:
-            self.play_history.append(field)
-        return self
-
     def get_winning_player(self) -> str | None:
         if len(self.play_history) == self.board_size * self.board_size:
             return '-'
-        for occupied_field in self.play_history:
+        for (occupied_field, _) in self.play_history:
             if self.is_winner(occupied_field):
                 return self.board[occupied_field[0]][occupied_field[1]]
         return None
