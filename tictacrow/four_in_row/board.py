@@ -5,12 +5,12 @@ class FourInRowBoard(Board):
     def __init__(self, board_size: int, max_in_row: int = 4) -> None:
         super().__init__(board_size, empty_value=' ')
         self.max_in_row = max_in_row
-        self.play_history = []
 
     def get_winning_player(self) -> str | None:
-        if len(self.play_history) == self.board_size * self.board_size:
+        occupied_fields = self.get_occupied_move_positions()
+        if len(occupied_fields) == self.board_size * self.board_size:
             return '-'
-        for (occupied_field, _) in self.play_history:
+        for occupied_field in occupied_fields:
             if self.is_winner(occupied_field):
                 return self.board[occupied_field[0]][occupied_field[1]]
         return None
@@ -28,7 +28,6 @@ class FourInRowBoard(Board):
                     current_column += direction * delta_column
                     if (self.is_legal_move([current_row, current_column]) and
                             self.board[current_row][current_column] == symbol):
-                        # print(                          f'current_row: {current_row}, current_column: {current_column} symbol_count: {symbol_count}')
                         symbol_count += 1
                         if symbol_count == self.max_in_row:
                             return True
