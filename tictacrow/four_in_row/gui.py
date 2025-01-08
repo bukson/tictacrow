@@ -58,5 +58,5 @@ class FourInRowGui:
 
 
 if __name__ == "__main__":
-    application = FourInRowGui(board_size=11, in_row=5, iterations=4000)
+    application = FourInRowGui(board_size=11, in_row=5, iterations=13000)
     application.start()

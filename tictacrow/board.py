@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-Field = list[int]
+from typing import Tuple
+
+Field = Tuple[int, int]
 
 
 class Board(ABC):
@@ -7,13 +9,14 @@ class Board(ABC):
         self.board_size = board_size
         self.empty_value = empty_value
         self.board = [[empty_value for _ in range(self.board_size)] for _ in range(self.board_size)]
+        self.current_player = 'X'
 
     def get_valid_move_positions(self) -> list[Field]:
         positions = []
         for y in range(self.board_size):
             for x in range(self.board_size):
                 if self.board[y][x] == self.empty_value:
-                    positions.append([y, x])
+                    positions.append((y, x))
         return positions
 
     def get_occupied_move_positions(self) -> list[Field]:
@@ -21,7 +24,7 @@ class Board(ABC):
         for y in range(self.board_size):
             for x in range(self.board_size):
                 if self.board[y][x] != self.empty_value:
-                    positions.append([y, x])
+                    positions.append((y, x))
         return positions
 
     def update_board(self, field: Field, symbol: str) -> 'Board':
@@ -49,4 +52,3 @@ class Board(ABC):
             self.current_player = 'O'
         else:
             self.current_player = 'X'
-
