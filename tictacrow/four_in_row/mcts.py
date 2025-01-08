@@ -20,7 +20,13 @@ class MCTSNode:
         self.ucb = float("inf")
 
     def __repr__(self):
-        return f'MTCSNODE(score= {(1+self.wins) / (1+self.visits):.2f} ({self.wins}/{self.visits}) player={self.player})'
+        if self.visits == 0:
+            return f'MTCSNODE(0/0 win probability= 0.0 player={self.player})'
+        if len(self.children) == 0:
+            return f'MTCSNODE( ({self.wins}/{self.visits}) self win probability= {self.wins / self.visits:.2f} player={self.player})'
+        else:
+            most_visited_child = self.get_most_visited_child()
+            return f'MTCSNODE(({self.wins}/{self.visits}) best child win probability= {self.get_winning_probability():.2f}  player={self.player})'
 
     @property
     def previous_player(self) -> str:
@@ -42,9 +48,19 @@ class MCTSNode:
     def get_best_child(self):
         return max(self.children.values(), key=lambda child: child.ucb)
 
+    def get_most_visited_child(self):
+        return max(self.children.values(), key=lambda child: child.visits)
+
+    def get_winning_probability(self) -> float:
+        if len(self.children) == 0:
+            return 0.0
+        else:
+            most_visited_child = self.get_most_visited_child()
+            return most_visited_child.wins / most_visited_child.visits
+
     def set_upper_confidence_bound(self, exploration_weight: float = 1.) -> None:
-            self.ucb = (self.wins + self.draws / 2) / self.visits + exploration_weight * math.sqrt(
-                math.log(self.parent.visits) / self.visits)
+        self.ucb = (self.wins + self.draws / 2) / self.visits + exploration_weight * math.sqrt(
+            math.log(self.parent.visits) / self.visits)
 
 
 def mcts(root_node: MCTSNode, iterations: int = 4000, random_seed: int = 1) -> Field:
@@ -124,18 +140,3 @@ def backpropagate_reward(node: MCTSNode, winner: str) -> None:
         if node.parent:
             node.set_upper_confidence_bound()
         node = node.parent
-
-class CPUPlayer:
-    def __init__(self, board: Board, player: str = 'O', iterations: int = 2000, random_seed: int = 0) -> None:
-        self.board = board
-        self.player = player
-        self.iterations = iterations
-        self.mcts_node = MCTSNode(deepcopy(self.board), player)
-        self.random_seed = random_seed
-
-    def select_best_move_mcts(self) -> Field:
-        mcts_node = MCTSNode(deepcopy(self.board), self.player)
-        best_move = mcts(mcts_node, iterations=self.iterations, random_seed=self.random_seed)
-        for move, child in sorted(mcts_node.children.items(), key=lambda kv: kv[1].visits, reverse=True):
-            print(move, child)
-        return best_move
