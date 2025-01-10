@@ -16,13 +16,24 @@ class NInRowGui:
         self.current_move = None
 
     def draw_board(self):
-        for row in range(self.board_size):
-            for column in range(self.board_size):
-                button = tk.Button(self.root, text="", font=("Arial", 24), height=2, width=5,
-                                   command=lambda r=row, c=column: self.make_move(r, c))
-                button.grid(row=row, column=column)
-                self.buttons[row][column] = button
 
+        # Add column numbers at the top
+        for column in range(self.board_size):
+            label = tk.Label(self.root, text=str(column), font=("Arial", 14), width=5)
+            label.grid(row=0, column=column + 1)  # Offset by 1 for row numbers on the left
+
+        # Add row numbers on the left
+        for row in range(self.board_size):
+            label = tk.Label(self.root, text=str(row), font=("Arial", 14), height=2)
+            label.grid(row=row + 1, column=0)  # Offset by 1 for column numbers at the top
+
+            # Draw the board
+            for row in range(self.board_size):
+                for column in range(self.board_size):
+                    button = tk.Button(self.root, text="", font=("Arial", 24), height=2, width=5,
+                                       command=lambda r=row, c=column: self.make_move(r, c))
+                    button.grid(row=row + 1, column=column + 1)  # Offset by 1 for labels
+                    self.buttons[row][column] = button
 
     def make_move(self, row: int, col: int):
         if self.current_move is None and self.buttons[row][col]["text"] == "":

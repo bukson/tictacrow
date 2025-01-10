@@ -55,7 +55,7 @@ class CPUPlayer(Player):
         for move, child in sorted(self.mcts_node.children.items(), key=lambda kv: kv[1].visits, reverse=True)[:4]:
             print(move, child)
         self.board.update_board(best_move, self.symbol)
-        # self.mcts_node = self.mcts_node.children[best_move]
+        self.mcts_node = self.mcts_node.children[best_move]
         self.board.print()
         return best_move
 
@@ -64,20 +64,19 @@ class CPUPlayer(Player):
         if len(self.mcts_node.children) == 0:
             return
         else:
-            pass
-            # self.mcts_node = self.mcts_node.children[opponent_move]
-            # print(f'Visited this position {self.mcts_node.visits} times with win rate {self.mcts_node.wins / self.mcts_node.visits}')
+            self.mcts_node = self.mcts_node.children[opponent_move]
+            print(f'{self.symbol}: visited this position {self.mcts_node.visits} times with win rate {self.mcts_node.wins / self.mcts_node.visits}')
 
 
 
 class NinRowGame:
-    def __init__(self, board_size: int = 11, in_row: int = 5, iterations = 10000):
+    def __init__(self, board_size: int = 11, in_row: int = 5, iterations = 60000, random_seed:int=0):
         self.board_size = board_size
         self.board = FourInRowBoard(board_size, in_row)
         self.in_row = in_row
         self.gui = NInRowGui(board_size=11, in_row=5)
-        self.players = [HumanPlayer(self.board, 'X', self.gui), CPUPlayer(self.board, 'O', iterations, 0)]
-        self.players = [CPUPlayer(self.board, 'X', iterations, random_seed=1), CPUPlayer(self.board, 'O', iterations, 0)]
+        self.players = [HumanPlayer(self.board, 'X', self.gui), CPUPlayer(self.board, 'O', iterations, random_seed)]
+        self.players = [CPUPlayer(self.board, 'X', iterations, random_seed=1), CPUPlayer(self.board, 'O', iterations, random_seed)]
         # self.players = [HumanPlayer(self.board, 'X', self.gui), HumanPlayer(self.board, 'O', self.gui)]
         self.current_player = 0
 
@@ -118,5 +117,5 @@ class NinRowGame:
 
 
 if __name__ == "__main__":
-    application = NinRowGame(board_size=11, in_row=5)
+    application = NinRowGame(board_size=11, in_row=5, random_seed=1526)
     application.start()

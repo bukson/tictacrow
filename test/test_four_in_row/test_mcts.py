@@ -34,7 +34,7 @@ def test_board_value_mcts(board_size: int, max_in_row: int, fields: list[Field],
     for i, field in enumerate(fields):
         board.update_board(field, players[i])
     board.print()
-    cpu = CPUPlayer(board, 'O', 40000)
+    cpu = CPUPlayer(board, 'O', 20000)
     cpu_move = cpu.get_move()
     winning_probability = cpu.mcts_node.get_winning_probability()
     print(winning_probability)

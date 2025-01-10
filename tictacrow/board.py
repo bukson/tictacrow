@@ -40,7 +40,12 @@ class Board(ABC):
 
     def print(self) -> None:
         print('\n')
-        for row in self.board:
+        print('  ', end='')
+        for i in range(self.board_size):
+            print(f'{str(i):>3s}  ', end='')
+        print('')
+        for i, row in enumerate(self.board):
+            print(f'{str(i):>2s}', end='')
             print(row)
 
     def is_legal_move(self, field: Field) -> bool:
