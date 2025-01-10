@@ -55,7 +55,7 @@ class CPUPlayer(Player):
         for move, child in sorted(self.mcts_node.children.items(), key=lambda kv: kv[1].visits, reverse=True)[:4]:
             print(move, child)
         self.board.update_board(best_move, self.symbol)
-        self.mcts_node = self.mcts_node.children[best_move]
+
         self.board.print()
         return best_move
 
@@ -64,7 +64,8 @@ class CPUPlayer(Player):
         if len(self.mcts_node.children) == 0:
             return
         else:
-            self.mcts_node = self.mcts_node.children[opponent_move]
+            # self.mcts_node = self.mcts_node.children[best_move]
+            # self.mcts_node = self.mcts_node.children[opponent_move]
             print(f'{self.symbol}: visited this position {self.mcts_node.visits} times with win rate {self.mcts_node.wins / self.mcts_node.visits}')
 
 

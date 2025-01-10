@@ -7,7 +7,7 @@ from copy import deepcopy, copy
 
 
 class MCTSNode:
-    def __init__(self, state: Board, player: str, parent: Optional['MCTSNode'] = None):
+    def __init__(self, state: Board, player: str, parent: Optional['MCTSNode'] = None, previous_move: Field|None =None):
         self.state = state
         self.parent = parent
         self.player = player
@@ -17,6 +17,7 @@ class MCTSNode:
         self.draws = 0
         self.possible_moves = self.state.get_valid_move_positions()
         self.untried_moves = set(self.possible_moves)
+        self.previous_move = previous_move
 
     def __repr__(self):
         if self.parent is None:
@@ -62,24 +63,28 @@ class MCTSNode:
 def mcts(root_node: MCTSNode, iterations: int = 4000, random_seed: int = 1) -> Field:
     random.seed(random_seed)
     for _ in range(iterations):
-        most_promising_leaf_node = select_most_promising_leaf_node(root_node)
-        new_node = expand_node(most_promising_leaf_node)
+        moves_to_rollback = []
+        most_promising_leaf_node = select_most_promising_leaf_node(root_node, moves_to_rollback)
+        new_node = expand_node(most_promising_leaf_node, moves_to_rollback)
         winner = simulate_random_game(new_node.state)
         backpropagate_reward(new_node, winner)
-
+        rollback_moves(root_node.state, moves_to_rollback)
+        pass
     best_move, best_child = max(root_node.children.items(), key=lambda kv: kv[1].visits)
     print(f'Root: {root_node}')
     print(f'Best move: {best_move}')
     return best_move
 
 
-def select_most_promising_leaf_node(node: MCTSNode) -> MCTSNode:
+def select_most_promising_leaf_node(node: MCTSNode, moves_to_rollback:list[Field]) -> MCTSNode:
     while not node.state.get_winning_player() and node.is_fully_expanded():
         node = node.get_best_child()
+        node.state.update_board(node.previous_move, node.previous_player)
+        moves_to_rollback.append(node.previous_move)
     return node
 
 
-def expand_node(node: MCTSNode) -> MCTSNode:
+def expand_node(node: MCTSNode, moves_to_rollback:list[Field]) -> MCTSNode:
     if node.state.get_winning_player() is None:
         if node.untried_moves:
             random_move = node.untried_moves.pop()
@@ -87,8 +92,8 @@ def expand_node(node: MCTSNode) -> MCTSNode:
             valid_moves = node.state.get_valid_move_positions()
             random_move = random.choice(valid_moves)
         if random_move not in node.children:
-            next_state = simulate_move(node.state, random_move)
-            child_node = MCTSNode(next_state, node.next_player, parent=node)
+            next_state = simulate_move(node.state, random_move, moves_to_rollback)
+            child_node = MCTSNode(next_state, node.next_player, parent=node, previous_move=random_move)
             node.add_child(random_move, child_node)
             return child_node
         else:
@@ -97,10 +102,10 @@ def expand_node(node: MCTSNode) -> MCTSNode:
         return node
 
 
-def simulate_move(state: Board, move: Field) -> Board:
-    new_state = deepcopy(state)
-    new_state.update_board(move, new_state.current_player)
-    return new_state
+def simulate_move(state: Board, move: Field, moves_to_rollback:list[Field]) -> Board:
+    state.update_board(move, state.current_player)
+    moves_to_rollback.append(move)
+    return state
 
 
 def simulate_random_game(state: Board) -> str:
@@ -132,3 +137,8 @@ def backpropagate_reward(node: MCTSNode, winner: str) -> None:
         if winner == '-':
             node.draws += 1
         node = node.parent
+
+def rollback_moves(state:Board, moves_to_rollback:list[Field]) -> None:
+    state.winner = None
+    for move in moves_to_rollback:
+        state.update_board(move, state.empty_value)
