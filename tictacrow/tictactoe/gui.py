@@ -28,7 +28,6 @@ class TitTacToeGui:
 
         self.board.update_board([row, col], self.current_player)
         self.buttons[row][col].config(text=self.current_player)
-        self.board.print()
 
         if (winning_player := self.board.get_winning_player()) is not None:
             if winning_player == '-':

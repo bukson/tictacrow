@@ -20,6 +20,7 @@ class Board(ABC):
     def get_occupied_move_positions(self) -> list[Field]:
         return list(self.occupied_moves)
 
+
     def update_board(self, field: Field, symbol: str) -> 'Board':
         if self.winner is not None:
             raise ValueError('Attempting to update board with winner')
@@ -33,9 +34,8 @@ class Board(ABC):
             self.update_current_player(symbol)
             if self.is_move_winning(field):
                 self.winner = symbol
-            else:
-                if len(self.valid_moves) == 0:
-                    self.winner = '-'
+            elif not self.valid_moves:
+                self.winner = '-'
         return self
 
     def print(self) -> None:

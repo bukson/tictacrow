@@ -64,18 +64,19 @@ class CPUPlayer(Player):
         if len(self.mcts_node.children) == 0:
             return
         else:
+            pass
             # self.mcts_node = self.mcts_node.children[best_move]
             # self.mcts_node = self.mcts_node.children[opponent_move]
-            print(f'{self.symbol}: visited this position {self.mcts_node.visits} times with win rate {self.mcts_node.wins / self.mcts_node.visits}')
+            # print(f'{self.symbol}: visited this position {self.mcts_node.visits} times with win rate {self.mcts_node.wins / self.mcts_node.visits}')
 
 
 
 class NinRowGame:
-    def __init__(self, board_size: int = 11, in_row: int = 5, iterations = 60000, random_seed:int=0):
+    def __init__(self, board_size: int = 11, in_row: int = 5, iterations = 120000, random_seed:int=1):
         self.board_size = board_size
         self.board = FourInRowBoard(board_size, in_row)
         self.in_row = in_row
-        self.gui = NInRowGui(board_size=11, in_row=5)
+        self.gui = NInRowGui(board_size=board_size, in_row=in_row)
         self.players = [HumanPlayer(self.board, 'X', self.gui), CPUPlayer(self.board, 'O', iterations, random_seed)]
         self.players = [CPUPlayer(self.board, 'X', iterations, random_seed=1), CPUPlayer(self.board, 'O', iterations, random_seed)]
         # self.players = [HumanPlayer(self.board, 'X', self.gui), HumanPlayer(self.board, 'O', self.gui)]
@@ -118,5 +119,5 @@ class NinRowGame:
 
 
 if __name__ == "__main__":
-    application = NinRowGame(board_size=11, in_row=5, random_seed=1526)
+    application = NinRowGame(board_size=11, in_row=5, iterations=121**3, random_seed=1526)
     application.start()

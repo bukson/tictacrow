@@ -1,6 +1,7 @@
 from tictacrow.board import Board, Field
 
 
+
 class FourInRowBoard(Board):
     def __init__(self, board_size: int, max_in_row: int = 4) -> None:
         super().__init__(board_size, empty_value=' ')
@@ -10,25 +11,25 @@ class FourInRowBoard(Board):
         row, column = field[0], field[1]
         symbol = self.board[row][column]
 
-        def check_direction(delta_row: int, delta_column: int) -> bool:
-            symbol_count = 1
-            for direction in (-1, 1):
-                current_row, current_column = row, column
-                while True:
-                    current_row += direction * delta_row
-                    current_column += direction * delta_column
-                    if (self.is_legal_move([current_row, current_column]) and
-                            self.board[current_row][current_column] == symbol):
-                        symbol_count += 1
-                        if symbol_count == self.max_in_row:
-                            return True
-                    else:
-                        break
-            return False
+        def count_in_direction(delta_row: int, delta_column: int) -> int:
+            count = 0
+            current_row, current_column = row + delta_row, column + delta_column
+            while (
+                0 <= current_row < self.board_size and
+                0 <= current_column < self.board_size and
+                self.board[current_row][current_column] == symbol
+            ):
+                count += 1
+                current_row += delta_row
+                current_column += delta_column
+            return count
 
-        return (
-                check_direction(1, 0) or  # Vertical
-                check_direction(0, 1) or  # Horizontal
-                check_direction(1, 1)  or  # Positive Diagonal \
-                check_direction(1, -1)  # Negative Diagonal /
-        )
+        # Check all directions: vertical, horizontal, and two diagonals
+        directions = [(1, 0), (0, 1), (1, 1), (1, -1)]
+        for delta_row, delta_column in directions:
+            # Count both forward and backward in this direction
+            total_count = 1 + count_in_direction(delta_row, delta_column) + count_in_direction(-delta_row, -delta_column)
+            if total_count >= self.max_in_row:
+                return True
+
+        return False
