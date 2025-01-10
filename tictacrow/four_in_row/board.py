@@ -6,16 +6,7 @@ class FourInRowBoard(Board):
         super().__init__(board_size, empty_value=' ')
         self.max_in_row = max_in_row
 
-    def get_winning_player(self) -> str | None:
-        occupied_fields = self.get_occupied_move_positions()
-        if len(occupied_fields) == self.board_size * self.board_size:
-            return '-'
-        for occupied_field in occupied_fields:
-            if self.is_winner(occupied_field):
-                return self.board[occupied_field[0]][occupied_field[1]]
-        return None
-
-    def is_winner(self, field: Field) -> bool:
+    def is_move_winning(self, field: Field) -> bool:
         row, column = field[0], field[1]
         symbol = self.board[row][column]
 

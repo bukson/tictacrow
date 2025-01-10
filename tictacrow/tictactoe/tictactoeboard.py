@@ -23,7 +23,7 @@ class TicTacToeBoard(Board):
             if all([self.board[i][i] == symbol for i in range(self.board_size)]):
                 return symbol
             # negative_diagonal
-            if all([self.board[i][(self.board_size -1)- i] == symbol for i in range(self.board_size)]):
+            if all([self.board[i][(self.board_size - 1) - i] == symbol for i in range(self.board_size)]):
                 return symbol
 
         return None

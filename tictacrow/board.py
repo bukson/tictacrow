@@ -10,26 +10,32 @@ class Board(ABC):
         self.empty_value = empty_value
         self.board = [[empty_value for _ in range(self.board_size)] for _ in range(self.board_size)]
         self.current_player = 'X'
+        self.valid_moves = {(x, y) for x in range(self.board_size) for y in range(self.board_size)}
+        self.occupied_moves = set()
+        self.winner = None
 
     def get_valid_move_positions(self) -> list[Field]:
-        positions = []
-        for y in range(self.board_size):
-            for x in range(self.board_size):
-                if self.board[y][x] == self.empty_value:
-                    positions.append((y, x))
-        return positions
+        return list(self.valid_moves)
 
     def get_occupied_move_positions(self) -> list[Field]:
-        positions = []
-        for y in range(self.board_size):
-            for x in range(self.board_size):
-                if self.board[y][x] != self.empty_value:
-                    positions.append((y, x))
-        return positions
+        return list(self.occupied_moves)
 
     def update_board(self, field: Field, symbol: str) -> 'Board':
+        if self.winner is not None:
+            raise ValueError('Attempting to update board with winner')
         self.board[field[0]][field[1]] = symbol
-        self.update_current_player(symbol)
+        if symbol == self.empty_value:
+            self.valid_moves.add(field)
+            self.occupied_moves.remove(field)
+        else:
+            self.occupied_moves.add(field)
+            self.valid_moves.remove(field)
+            self.update_current_player(symbol)
+            if self.is_move_winning(field):
+                self.winner = symbol
+            else:
+                if len(self.valid_moves) == 0:
+                    self.winner = '-'
         return self
 
     def print(self) -> None:
@@ -44,8 +50,11 @@ class Board(ABC):
         return True
 
     @abstractmethod
-    def get_winning_player(self) -> str | None:
+    def is_move_winning(self, move: Field) -> str | None:
         pass
+
+    def get_winning_player(self) -> str | None:
+        return self.winner
 
     def update_current_player(self, last_player_symbol: str) -> None:
         if last_player_symbol == 'X':

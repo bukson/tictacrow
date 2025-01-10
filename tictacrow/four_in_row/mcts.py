@@ -3,7 +3,7 @@ from typing import Optional
 from board import Board, Field
 import math
 import random
-from copy import deepcopy
+from copy import deepcopy, copy
 
 
 class MCTSNode:
@@ -17,16 +17,12 @@ class MCTSNode:
         self.draws = 0
         self.possible_moves = self.state.get_valid_move_positions()
         self.untried_moves = set(self.possible_moves)
-        self.ucb = float("inf")
 
     def __repr__(self):
-        if self.visits == 0:
-            return f'MTCSNODE(0/0 win probability= 0.0 player={self.player})'
-        if len(self.children) == 0:
-            return f'MTCSNODE( ({self.wins}/{self.visits}) self win probability= {self.wins / self.visits:.2f} player={self.player})'
+        if self.parent is None:
+            return f'MTCSNODE(score= {(1 + self.wins) / (1 + self.visits):.2f} ({self.wins}/{self.visits}) player={self.player})'
         else:
-            most_visited_child = self.get_most_visited_child()
-            return f'MTCSNODE(({self.wins}/{self.visits}) best child win probability= {self.get_winning_probability():.2f}  player={self.player})'
+            return f'MTCSNODE(score= {(1 + self.wins) / (1 + self.visits):.2f} ({self.wins}/{self.visits}) ucb={self.get_upper_confidence_bound():.8f} player={self.player})'
 
     @property
     def previous_player(self) -> str:
@@ -46,7 +42,7 @@ class MCTSNode:
         self.children[tuple(move)] = child
 
     def get_best_child(self):
-        return max(self.children.values(), key=lambda child: child.ucb)
+        return max(self.children.values(), key=lambda child: child.get_upper_confidence_bound())
 
     def get_most_visited_child(self):
         return max(self.children.values(), key=lambda child: child.visits)
@@ -58,8 +54,8 @@ class MCTSNode:
             most_visited_child = self.get_most_visited_child()
             return most_visited_child.wins / most_visited_child.visits
 
-    def set_upper_confidence_bound(self, exploration_weight: float = 1.) -> None:
-        self.ucb = (self.wins + self.draws / 2) / self.visits + exploration_weight * math.sqrt(
+    def get_upper_confidence_bound(self, exploration_weight: float = 1.) -> float:
+        return (self.wins + self.draws / 2) / self.visits + exploration_weight * math.sqrt(
             math.log(self.parent.visits) / self.visits)
 
 
@@ -78,11 +74,9 @@ def mcts(root_node: MCTSNode, iterations: int = 4000, random_seed: int = 1) -> F
 
 
 def select_most_promising_leaf_node(node: MCTSNode) -> MCTSNode:
-    while node.state.get_winning_player() is None:
-        if node.is_fully_expanded():
-            return node.get_best_child()
-        else:
-            return node
+    while not node.state.get_winning_player() and node.is_fully_expanded():
+        node = node.get_best_child()
+    return node
 
 
 def expand_node(node: MCTSNode) -> MCTSNode:
@@ -91,7 +85,7 @@ def expand_node(node: MCTSNode) -> MCTSNode:
             random_move = node.untried_moves.pop()
         else:
             valid_moves = node.state.get_valid_move_positions()
-            random_move = tuple(random.choice(valid_moves))
+            random_move = random.choice(valid_moves)
         if random_move not in node.children:
             next_state = simulate_move(node.state, random_move)
             child_node = MCTSNode(next_state, node.next_player, parent=node)
@@ -114,29 +108,27 @@ def simulate_random_game(state: Board) -> str:
     valid_moves_len = len(valid_moves)
     random.shuffle(valid_moves)
     move_index = 0
-    while (winner := state.get_winning_player()) is None:
+    saved_state_current_player = state.current_player
+    saved_state_winner = state.winner
+    while state.winner is None:
         if move_index == valid_moves_len:
             raise Exception("No valid moves available")
         move = valid_moves[move_index]
         move_index += 1
         state.update_board(move, state.current_player)
+    winner = deepcopy(state.winner)
+    state.winner = saved_state_winner
     for i in range(0, move_index):
         state.update_board(valid_moves[i], state.empty_value)
+    state.current_player = saved_state_current_player
     return winner
 
 
 def backpropagate_reward(node: MCTSNode, winner: str) -> None:
-    tmp_node = node
-
-    while tmp_node:
-        tmp_node.visits += 1
-        if winner == tmp_node.previous_player:
-            tmp_node.wins += 1
-        if winner == '-':
-            tmp_node.draws += 1
-        tmp_node = tmp_node.parent
-
     while node:
-        if node.parent:
-            node.set_upper_confidence_bound()
+        node.visits += 1
+        if winner == node.previous_player:
+            node.wins += 1
+        if winner == '-':
+            node.draws += 1
         node = node.parent
